@@ -1,0 +1,17 @@
+{
+  "name": "vandal-web",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
+    "archiver": "^7.0.1",
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.5"
+  }
+}

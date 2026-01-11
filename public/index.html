@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KOLBIX TOOLS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { 
+      --bg: #09090b; 
+      --card-bg: #18181b; 
+      --border: #27272a; 
+      --text-main: #e4e4e7; 
+      --text-muted: #a1a1aa; 
+      --accent: #6366f1; 
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
+      --success: #22c55e; 
+      --terminal-bg: #0c0c0e; 
+    }
+
+    * { box-sizing: border-box; } /* Глобальное исправление размеров */
+
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg); 
+      color: var(--text-main); 
+      margin: 0; 
+      padding: 40px 20px; 
+      display: flex; 
+      justify-content: center; 
+    }
+
+    .wrap { width: 100%; max-width: 700px; }
+    
+    .header { text-align: center; margin-bottom: 30px; }
+    
+    .logo { 
+      font-weight: 800; 
+      font-size: 32px; 
+      background: var(--accent-gradient); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      text-transform: uppercase; 
+      margin: 0; 
+    }
+
+    .subtitle { color: var(--text-muted); font-size: 13px; margin-top: 5px; font-weight: 600; }
+
+    .card { 
+      background: var(--card-bg); 
+      border: 1px solid var(--border); 
+      border-radius: 20px; 
+      padding: 24px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+    }
+    
+    .tool-view { display: none; }
+    .tool-view.active { display: block; }
+    
+    label { 
+      display: block; 
+      font-size: 11px; 
+      font-weight: 700; 
+      color: var(--text-muted); 
+      margin-bottom: 8px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+    }
+
+    textarea { 
+      width: 100%; 
+      background: var(--terminal-bg); 
+      border: 1px solid var(--border); 
+      color: var(--text-main); 
+      border-radius: 12px; 
+      padding: 16px; 
+      font-family: 'JetBrains Mono', monospace; 
+      font-size: 13px; 
+      resize: vertical; /* Только по вертикали */
+      min-height: 120px;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+    
+    .file-label, button { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      width: 100%; 
+      height: 54px; 
+      border-radius: 12px; 
+      font-size: 14px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      border: none; 
+    }
+
+    .file-label { 
+      border: 1px dashed var(--border); 
+      background: rgba(255,255,255,0.03); 
+      color: var(--text-muted); 
+    }
+
+    .file-label:hover { border-color: var(--accent); color: var(--text-main); }
+    
+    .file-label.has-file { 
+      border-style: solid;
+      border-color: var(--success); 
+      color: var(--success); 
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    button { 
+      background: var(--accent-gradient); 
+      color: white; 
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    button:hover { transform: translateY(-1px); opacity: 0.9; }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .option-row {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-top: 12px; 
+      background: rgba(255,255,255,0.03); 
+      padding: 12px 16px; 
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .menu-btn { 
+      position: fixed; 
+      bottom: 30px; 
+      right: 30px; 
+      width: 60px; 
+      height: 60px; 
+      background: var(--accent-gradient); 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      cursor: pointer; 
+      box-shadow: 0 10px 20px rgba(99,102,241,0.4); 
+      z-index: 100; 
+      transition: transform 0.3s;
+    }
+    .menu-btn:hover { transform: rotate(15deg) scale(1.1); }
+
+    .switch { position: relative; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { 
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
+      background: var(--border); border-radius: 34px; transition: 0.4s; 
+    }
+    .slider:before { 
+      position: absolute; content: ""; height: 18px; width: 18px; 
+      left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.4s; 
+    }
+    input:checked + .slider { background: var(--success); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .log-window { 
+      background: var(--terminal-bg); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 16px; 
+      height: 140px; 
+      overflow-y: auto; 
+      font-family: 'JetBrains Mono', monospace; 
+      font-size: 12px; 
+      color: #38bdf8; 
+      margin-top: 20px; 
+      white-space: pre-wrap; 
+    }
+
+    #dropzone { 
+      border: 2px dashed var(--border); 
+      padding: 40px; 
+      text-align: center; 
+      border-radius: 12px; 
+      color: var(--text-muted); 
+      cursor: pointer; 
+      transition: 0.2s;
+    }
+    #dropzone:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.05); }
+  </style>
+</head>
+<body>
+
+<div class="menu-btn" onclick="toggleTool()" title="Сменить инструмент">
+  <svg viewBox="0 0 24 24" width="28" height="28"><path fill="white" d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+</div>
+
+<div class="wrap">
+  <div class="header">
+    <h1 class="logo">KOLBIX TOOLS</h1>
+    <div id="mode-text" class="subtitle">MODE: PARSER & WATERMARK</div>
+  </div>
+
+  <div id="view1" class="card tool-view active">
+    <label>Ссылки на товары</label>
+    <textarea id="urls" placeholder="Вставьте ссылки (каждая с новой строки)..."></textarea>
+    
+    <div class="option-row">
+      <span style="font-size:11px; font-weight:700">УДАЛЯТЬ ЛОГО САЙТА (СНИЗУ СПРАВА)</span>
+      <label class="switch"><input type="checkbox" id="rmCheck" checked><span class="slider"></span></label>
+    </div>
+
+    <div class="option-row">
+      <span style="font-size:11px; font-weight:700">ПОДРОБНЫЙ SYSTEM LOG</span>
+      <label class="switch"><input type="checkbox" id="debugCheck"><span class="slider"></span></label>
+    </div>
+
+    <div class="row">
+      <div style="position:relative">
+        <label for="wm" class="file-label" id="wm-label">📂 ВЫБРАТЬ ЛОГО</label>
+        <input id="wm" type="file" accept="image/png" style="display:none" />
+      </div>
+      <button id="go-parser">🚀 ЗАПУСТИТЬ</button>
+    </div>
+    <div id="log-parser" class="log-window">// Ожидание запуска...</div>
+  </div>
+
+  <div id="view2" class="card tool-view">
+    <label>Массовое наложение фона</label>
+    <div id="dropzone" onclick="document.getElementById('bg-files').click()">
+      <span id="bg-info">Кликните, чтобы выбрать PNG файлы<br><small>(удалит прозрачность и сделает квадрат 1000x1000)</small></span>
+      <input id="bg-files" type="file" multiple style="display:none" />
+    </div>
+    <button id="go-bg" style="width:100%; margin-top:20px;">🎨 ОБРАБОТАТЬ И СКАЧАТЬ ZIP</button>
+    <div id="log-bg" class="log-window">// Ожидание файлов...</div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function toggleTool() {
+    const v1 = $('view1'), v2 = $('view2'), mt = $('mode-text');
+    if(v1.classList.contains('active')) {
+      v1.classList.remove('active'); v2.classList.add('active');
+      mt.innerText = "MODE: MASS WHITE BACKGROUND";
+    } else {
+      v2.classList.remove('active'); v1.classList.add('active');
+      mt.innerText = "MODE: PARSER & WATERMARK";
+    }
+  }
+
+  function appendLog(line) {
+    const log = $('log-parser');
+    if (log.textContent.includes("//")) log.textContent = "";
+    const time = new Date().toLocaleTimeString('ru-RU');
+    log.textContent += `[${time}] ${line}\n`;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // Логика выбора файла
+  $('wm').onchange = (e) => {
+    const f = e.target.files[0];
+    if(f) {
+      $('wm-label').innerText = `✅ ${f.name.substring(0,15)}...`;
+      $('wm-label').classList.add('has-file');
+    }
+  };
+
+  $('go-parser').onclick = async () => {
+    const urls = $('urls').value.trim();
+    if(!urls) return alert("Введите хотя бы одну ссылку");
+    
+    const btn = $('go-parser');
+    btn.disabled = true;
+    $('log-parser').textContent = "";
+    appendLog("Инициализация...");
+
+    const fd = new FormData();
+    fd.append("urls", urls);
+    fd.append("removeWm", $('rmCheck').checked);
+    if($('wm').files[0]) fd.append("wm", $('wm').files[0]);
+
+    try {
+      appendLog("Запрос отправлен на сервер...");
+      const r = await fetch("/api/download", { method: "POST", body: fd });
+      if(!r.ok) throw new Error("Ошибка сервера");
+      
+      appendLog("Обработка завершена, скачиваю архив...");
+      const blob = await r.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `kolbix_pack_${Date.now()}.zip`;
+      a.click();
+      appendLog("✅ Готово! Пакет сохранен.");
+    } catch(e) {
+      appendLog("❌ ОШИБКА: " + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  $('bg-files').onchange = (e) => {
+    $('bg-info').innerHTML = `✅ Выбрано файлов: <b>${e.target.files.length}</b>`;
+  };
+
+  $('go-bg').onclick = async () => {
+    const files = $('bg-files').files;
+    if(!files.length) return alert("Выберите файлы");
+    
+    const btn = $('go-bg'); btn.disabled = true;
+    const log = $('log-bg'); log.textContent = "Обработка очереди...";
+
+    const fd = new FormData();
+    for(let f of files) fd.append("images", f);
+
+    try {
+      const r = await fetch("/api/white-bg", { method: "POST", body: fd });
+      const blob = await r.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "white_bg_ready.zip";
+      a.click();
+      log.textContent = "🎉 Успешно! Все файлы обработаны.";
+    } catch(e) { 
+      log.textContent = "❌ Ошибка при обработке.";
+    } finally { 
+      btn.disabled = false; 
+    }
+  };
+</script>
+
+</body>
+</html>
